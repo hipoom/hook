@@ -2,6 +2,7 @@ package com.hipoom.hook;
 
 import com.hipoom.hook.adapter.ClassHolder;
 import com.hipoom.hook.constructor.ConstructorIntent;
+import com.hipoom.hook.method.MethodIntent;
 
 /**
  * @author ZhengHaiPeng

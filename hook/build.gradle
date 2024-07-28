@@ -57,5 +57,5 @@ android {
 
 dependencies {
     implementation "androidx.annotation:annotation:1.4.0"
-    implementation project(":hook-adapter")
+    implementation 'com.hipoom:hook-adapter:0.0.1'
 }

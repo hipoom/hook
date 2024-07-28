@@ -2,8 +2,6 @@ plugins {
     id 'com.android.library'
 }
 
-//apply from: "publish-jar-2-local-maven.gradle"
-
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
@@ -50,14 +48,12 @@ android {
     }
 }
 
-//java {
-//    sourceCompatibility = JavaVersion.VERSION_1_8
-//    targetCompatibility = JavaVersion.VERSION_1_8
-//}
+// 这一行一定要放到 「android」 后面，否则会出现报错「Extension not initialized yet, couldn't access compileSdkVersion.」
+apply from: "publish-aar-2-local-maven.gradle"
 
 dependencies {
     implementation "androidx.annotation:annotation:1.4.0"
 
     implementation 'top.canyie.pine:core:0.2.9'
-    implementation project(":hook-adapter")
+    implementation 'com.hipoom:hook-adapter:0.0.1'
 }

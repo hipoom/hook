@@ -1,4 +1,4 @@
-package com.hipoom.hook;
+package com.hipoom.hook.method;
 
 import androidx.annotation.NonNull;
 import com.hipoom.hook.method.AllMethodIntent;
