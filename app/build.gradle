@@ -62,7 +62,8 @@ repositories {
 dependencies {
     implementation 'androidx.core:core-ktx:1.6.0'
     implementation 'androidx.appcompat:appcompat:1.2.0'
+
     implementation 'com.hipoom:hook-adapter:0.0.1'
-    implementation project(":hook-adapter-pine")
-    implementation project(':hook')
+    implementation 'com.hipoom:hook-adapter-pine:0.0.1'
+    implementation 'com.hipoom:hook:0.0.1'
 }

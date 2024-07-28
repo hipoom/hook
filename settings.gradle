@@ -2,4 +2,4 @@ rootProject.name = "hook"
 include ':app'
 include ':hook'
 // include ':hook-adapter'
-include ':hook-adapter-pine'
+// include ':hook-adapter-pine'

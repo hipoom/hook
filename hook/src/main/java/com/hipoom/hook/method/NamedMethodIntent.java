@@ -1,7 +1,5 @@
 package com.hipoom.hook.method;
 
-import com.hipoom.hook.adapter.HookParams;
-
 /**
  * @author ZhengHaiPeng
  * @since 2024/7/28 16:56
