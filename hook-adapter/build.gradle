@@ -2,7 +2,7 @@ plugins {
     id 'com.android.library'
 }
 
-//apply from: "publish-jar-2-local-maven.gradle"
+apply from: "publish-aar-2-local-maven.gradle"
 
 android {
     compileSdkVersion 30

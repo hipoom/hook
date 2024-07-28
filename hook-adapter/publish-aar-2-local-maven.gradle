@@ -1,5 +1,5 @@
 // ========================================================================
-// 发布 *.jar 产物到本地的 maven 仓库.
+// 发布 *.aar 产物到本地的 maven 仓库.
 // ========================================================================
 
 apply plugin: "maven-publish"
@@ -41,42 +41,21 @@ signing {
  * 注册 sourcesJar 任务，否则会没有 sources.jar 文件.
  */
 tasks.register('sourcesJar', Jar) {
-    dependsOn classes
-
-    // gradle 8.0 以下用 classifier
-    // classifier = 'sources'
-
-    // gradle 8.0 及以上用 archiveClassifier
-    archiveClassifier = 'sources'
-
-    from sourceSets.main.allSource
+    classifier = 'sources'
+    dependsOn assemble
+    from android.sourceSets.main.java.srcDirs
 }
 
-/**
- * 注册 javadocJar 任务，否则会没有 javaDoc.jar 文件.
- */
+tasks.register('javadoc', Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    failOnError = false
+}
+
 tasks.register('javadocJar', Jar) {
+    classifier = 'javadoc'
     dependsOn javadoc
-
-    // gradle 8.0 以下用 classifier
-    // classifier = 'javadoc'
-
-    // gradle 8.0 及以上用 archiveClassifier
-    archiveClassifier = 'javadoc'
-
     from javadoc.destinationDir
 }
-
-//// 解决 javadoc 打包乱码，如果出现 「警告: xxx 没有 @param」，重新执行 「publish」 即可。
-//javadoc {
-//    options {
-//        encoding "UTF-8"
-//        charSet 'UTF-8'
-//        author true
-//        version true
-//        title "Hipoom Java Doc"
-//    }
-//}
 
 publishing {
     // 定义目标仓库
@@ -94,12 +73,24 @@ publishing {
             artifactId getProductArtifactId()
             version getProductVersion()
 
-            //打包源码和class
-            from components.java
-
             // 增加 sources.jar 和 javadocs.jar
             artifact sourcesJar
+            artifact "$buildDir/outputs/aar/hook-adapter-release.aar"
             artifact javadocJar
+
+            pom.withXml {
+                //根节点
+                def rootDependencyNode = asNode().appendNode('dependencies')
+
+                //依赖信息
+                writeDependencyToPomFile(rootDependencyNode, configurations.implementation)
+                writeDependencyToPomFile(rootDependencyNode, configurations.api)
+                writeDependencyToPomFile(rootDependencyNode, configurations.provided)
+                writeDependencyToPomFile(rootDependencyNode, configurations.compile)
+                writeDependencyToPomFile(rootDependencyNode, configurations.releaseApi)
+                writeDependencyToPomFile(rootDependencyNode, configurations.releaseCompile)
+                writeDependencyToPomFile(rootDependencyNode, configurations.releaseImplementation)
+            }
 
             // 追加其他信息
             pom {
@@ -125,6 +116,46 @@ publishing {
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+/**
+ * 写入依赖信息到pom.xml文件中
+ */
+private void writeDependencyToPomFile(Object rootDependencyNode, Configuration configuration) {
+    configuration.allDependencies.withType(ModuleDependency).tap {
+        configureEach { dependency ->
+            // 这些是本地依赖的其他 module
+            if (dependency.group == null || dependency.group.isEmpty()) {
+                return
+            }
+
+            // 添加 dependency 节点
+            def dependencyNode = rootDependencyNode.appendNode('dependency')
+
+            // 节点内容
+            def group = dependency.group
+            def artifactId = dependency.name
+            def version = dependency.version
+
+            dependencyNode.appendNode('groupId', group)
+            dependencyNode.appendNode('artifactId', artifactId)
+            dependencyNode.appendNode('version', version == "unspecified" ? project.VERSION : version)
+            dependencyNode.appendNode('scope', configuration.name)
+
+            // 如果有 exclude，追加 exclude 信息
+            if (dependency.excludeRules.size() <= 0) {
+                return
+            }
+
+            def exclusionsNode = dependencyNode.appendNode('exclusions')
+            dependency.excludeRules.each { rule ->
+                def exclusionNode = exclusionsNode.appendNode('exclusion')
+                boolean isEmptyGroupID = (rule.group == null || rule.group == "")
+                exclusionNode.appendNode('groupId', isEmptyGroupID ? "*" : rule.group)
+                exclusionNode.appendNode('artifactId', rule.module)
             }
         }
     }
